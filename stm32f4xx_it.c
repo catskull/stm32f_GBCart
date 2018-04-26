@@ -6,9 +6,9 @@
   * @brief   Interrupt handlers.
   *          The interrupt handler for the rising flag trigger is defined here.
   *          It handles the read and write operations of the gameboy to the
-  *          cartridge.  
+  *          cartridge.
   ******************************************************************************
-  */ 
+  */
 
 #include "stm32f4xx_it.h"
 #include "stm32f4_discovery.h"
@@ -30,11 +30,12 @@
 //#include "roms/organizer_rom.h"
 //#include "roms/organizer_sav.h"
 //#include "roms/demonblood_rom.h"
-#include "roms/joul_rom.h"
-#include "dhole2_logo.h"
+#include "roms/pocket_rom.h"
+#include "roms/pwned_rom.h"
+// #include "dhole2_logo.h"
 
 
-/* 
+/*
  * Macros to relate the GPIO and the functionality
  */
 #define BUS_RD (GPIOC->IDR & 0x0002)
@@ -49,7 +50,7 @@
 /* Defines wether to show the Nintendo logo or the custom logo */
 uint8_t no_show_logo;
 
-uint8_t rom_bank; 
+uint8_t rom_bank;
 uint8_t ram_bank;
 uint8_t ram_enable;
 uint8_t rom_ram_mode;
@@ -88,10 +89,10 @@ inline void mbc1_write(uint16_t addr, uint8_t data) {
 		}
 	} else if (addr < 0x8000) {
 		/* ROM/RAM Mode Select */
-		if (data) { 
+		if (data) {
 			/* Emable RAM Banking mode */
 			rom_ram_mode = 0;
-		} else { 
+		} else {
 			/* Emable ROM Banking mode */
 			rom_ram_mode = 1;
 		}
@@ -110,8 +111,9 @@ inline uint8_t mbc1_read(uint16_t addr) {
 			if (addr == 0x133) {
 				no_show_logo = 1;
 			}
-			return logo_bin[addr - 0x104];
+			return logo_bin[addr];
 		}
+		return rom_gb[addr];
 	} else if (addr < 0x8000) {
 		/* 16KB ROM Bank 01-7F */
 		return rom_gb[addr + 0x4000 * (rom_bank - 1)];
@@ -126,10 +128,10 @@ inline uint8_t mbc1_read(uint16_t addr) {
 void EXTI0_IRQHandler(void) {
 	uint16_t addr;
 	uint8_t data;
-	
+
 	uint32_t enablestatus;
 	enablestatus =  EXTI->IMR & EXTI_Line0;
-	
+
 	if (((EXTI->PR & EXTI_Line0) != (uint32_t)RESET) &&
 	    (enablestatus != (uint32_t)RESET)) {
 		/* Do stuff on trigger */
@@ -138,10 +140,10 @@ void EXTI0_IRQHandler(void) {
 		REP(1,0,asm("NOP"););
 		/* Read ADDR from the bus */
 		addr = ADDR_IN;
-		
+
 		if (BUS_RD || !BUS_WR) {
 			/* Write operation */
-			
+
 			/* Wait 30 NOPs, until the DATA is ready in the bus */
 			REP(3,0,asm("NOP"););
 			/* Read DATA from the bus */
@@ -150,7 +152,7 @@ void EXTI0_IRQHandler(void) {
 			mbc1_write(addr, data);
 		} else {
 			/* Read operation */
-			
+
 			/* Set the GPIOE in output mode */
 			SET_DATA_MODE_OUT;
 			/* Output the data read at addr through GPIOE */

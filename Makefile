@@ -1,6 +1,6 @@
 
 # Put your stlink folder here so make burn will work.
-STLINK=~/stlink.git
+STLINK=/usr/local/Cellar/stlink/1.4.0/bin
 
 SRCS=main.c system_stm32f4xx.c stm32f4xx_it.c
 
@@ -14,12 +14,12 @@ PROJ_NAME=gbcart
 
 #######################################################################################
 
-STM_COMMON=../../..
+STM_COMMON=./libs
 
 CC=arm-none-eabi-gcc
 OBJCOPY=arm-none-eabi-objcopy
 
-CFLAGS  = -g -O2 -Wall -Tstm32_flash.ld 
+CFLAGS  = -g -O2 -Wall -Tstm32_flash.ld
 CFLAGS += -DUSE_STDPERIPH_DRIVER
 CFLAGS += -mlittle-endian -mthumb -mcpu=cortex-m4 -mthumb-interwork
 CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
@@ -27,13 +27,13 @@ CFLAGS += -I.
 
 # Include files from STM libraries
 CFLAGS += -I$(STM_COMMON)/Utilities/STM32F4-Discovery
-CFLAGS += -I$(STM_COMMON)/Libraries/CMSIS/Include 
+CFLAGS += -I$(STM_COMMON)/Libraries/CMSIS/Include
 CFLAGS += -I$(STM_COMMON)/Libraries/CMSIS/ST/STM32F4xx/Include
 CFLAGS += -I$(STM_COMMON)/Libraries/STM32F4xx_StdPeriph_Driver/inc
 
 
 # add startup file to build
-SRCS += $(STM_COMMON)/Libraries/CMSIS/ST/STM32F4xx/Source/Templates/TrueSTUDIO/startup_stm32f4xx.s 
+SRCS += $(STM_COMMON)/Libraries/CMSIS/ST/STM32F4xx/Source/Templates/TrueSTUDIO/startup_stm32f4xx.s
 
 OBJS = $(SRCS:.c=.o)
 
@@ -43,10 +43,10 @@ vpath %.c $(STM_COMMON)/Libraries/STM32F4xx_StdPeriph_Driver/src $(STM_COMMON)/U
 
 all: proj
 
-proj: $(PROJ_NAME).elf
+# proj: $(PROJ_NAME).elf
 
-$(PROJ_NAME).elf: $(SRCS)
-	$(CC) $(CFLAGS) $^ -o $@ 
+gbcart.elf: $(SRCS)
+	$(CC) $(CFLAGS) $^ -o $@
 	$(OBJCOPY) -O ihex $(PROJ_NAME).elf $(PROJ_NAME).hex
 	$(OBJCOPY) -O binary $(PROJ_NAME).elf $(PROJ_NAME).bin
 
